@@ -1,12 +1,17 @@
 
+from src.exceptions import LanguageNotFound
+
 class TioResponse:
 
-    def __init__(self, data: bytes):
+    def __init__(self, data: str):
 
         self.token = data[:16]
         
         data = data.replace(data[:16], "")
         self.output = data
+
+        if data.startswith("The language") and data.endswith("could not be found on the server."):
+            raise LanguageNotFound(self.output)
 
         stats = data.split("\n")
         parse_line = lambda line: line.split(":")[-1].split(" ")[0]
@@ -28,3 +33,12 @@ class TioResponse:
 
     def __int__(self):
         return self.exit_status
+
+    def __eq__(self, o):
+        if isinstance(o, TioResponse):
+            return self.output == o.output
+        else:
+            return self.output == o
+        
+    def __ne__(self, o):
+        return not self.__eq__(o)

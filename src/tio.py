@@ -7,6 +7,7 @@ from aiohttp import ClientSession
 from asyncio import get_event_loop, AbstractEventLoop
 
 from src.response import TioResponse
+from src.exceptions import ApiError
 
 class Tio:
 
@@ -66,7 +67,10 @@ class Tio:
         data   = compress(bytes_, 9)[2:-4]
 
         async with self.session.post(self.API_URL, data=data) as r:
-            data = await r.read()
-            data = data.decode("utf-8")
-            
-        return TioResponse(data)
+
+            if r.ok:
+                data = await r.read()
+                data = data.decode("utf-8")
+                return TioResponse(data)
+            else:
+                raise ApiError(f"Error {r.status} {r.reason}")
