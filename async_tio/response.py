@@ -17,12 +17,12 @@ class TioResponse:
         parse_line = lambda line: line.split(":")[-1].strip().split(" ")[0]
 
         try:
-            self.stdout      = "\n".join(stats[:-6])
-            self.real_time   = parse_line(stats[-6])
-            self.user_time   = parse_line(stats[-5])
-            self.sys_time    = parse_line(stats[-4])
-            self.cpu_usage   = parse_line(stats[-3])
-            self.exit_status = parse_line(stats[-2])
+            self.stdout      = "\n".join(stats[:-5])
+            self.real_time   = parse_line(stats[-5])
+            self.user_time   = parse_line(stats[-4])
+            self.sys_time    = parse_line(stats[-3])
+            self.cpu_usage   = parse_line(stats[-2])
+            self.exit_status = parse_line(stats[-1])
         except IndexError:
             pass
 
