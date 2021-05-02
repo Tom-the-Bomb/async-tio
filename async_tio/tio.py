@@ -7,8 +7,8 @@ from typing import Optional
 from aiohttp import ClientSession
 from asyncio import get_event_loop, AbstractEventLoop
 
-from async_tio.response import TioResponse
-from async_tio.exceptions import ApiError, LanguageNotFound
+from .response import TioResponse
+from .exceptions import ApiError, LanguageNotFound
 
 class Tio:
 
@@ -74,7 +74,8 @@ class Tio:
                 data = data.decode("utf-8")
 
                 if re.search(r"^The language ?'.+' ?could not be found on the server.$", data):
-                    raise LanguageNotFound(data[:16])
+                    print(data, "adssadasdasd")
+                    raise LanguageNotFound(data[16:])
                 else:
                     return TioResponse(data)
             else:
