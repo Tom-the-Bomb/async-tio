@@ -2,5 +2,5 @@
 class LanguageNotFound(Exception):
     pass
 
-class ApiError:
+class ApiError(Exception):
     pass
