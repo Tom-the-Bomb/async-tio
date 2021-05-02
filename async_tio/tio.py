@@ -73,8 +73,7 @@ class Tio:
                 data = await r.read()
                 data = data.decode("utf-8")
 
-                if re.search(r"^The language ?'.+' ?could not be found on the server.$", data):
-                    print(data, "adssadasdasd")
+                if re.search(r"The language ?'.+' ?could not be found on the server.", data):
                     raise LanguageNotFound(data[16:])
                 else:
                     return TioResponse(data)
