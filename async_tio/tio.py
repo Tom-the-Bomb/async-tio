@@ -1,3 +1,4 @@
+import re
 
 from zlib    import compress
 from functools import partial
@@ -7,7 +8,7 @@ from aiohttp import ClientSession
 from asyncio import get_event_loop, AbstractEventLoop
 
 from async_tio.response import TioResponse
-from async_tio.exceptions import ApiError
+from async_tio.exceptions import ApiError, LanguageNotFound
 
 class Tio:
 
@@ -71,6 +72,10 @@ class Tio:
             if r.ok:
                 data = await r.read()
                 data = data.decode("utf-8")
-                return TioResponse(data)
+
+                if re.search(r"^The language ?'.+' ?could not be found on the server.$", data):
+                    raise LanguageNotFound(data[:16])
+                else:
+                    return TioResponse(data)
             else:
                 raise ApiError(f"Error {r.status} {r.reason}")

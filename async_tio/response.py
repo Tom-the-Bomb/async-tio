@@ -1,6 +1,4 @@
 
-from async_tio.exceptions import LanguageNotFound
-
 class TioResponse:
 
     def __init__(self, data: str):
@@ -9,9 +7,6 @@ class TioResponse:
         
         data = data.replace(data[:16], "")
         self.output = data
-
-        if data.startswith("The language") and data.endswith("could not be found on the server."):
-            raise LanguageNotFound(self.output)
 
         stats = data.split("\n")
         parse_line = lambda line: line.split(":")[-1].strip().split(" ")[0]

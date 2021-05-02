@@ -20,8 +20,8 @@ output = asyncio.run(main())
 print(str(output)) #the formatted output along with the stats
 print(int(output)) #returns the exit status
 
-print(vars(output))
-# ["token", "output", "real_time", "user_time", "sys_time", "cpu_usage", "exit_status"]
+print(vars(output).keys())
+# dict_keys(["token", "output", "real_time", "user_time", "sys_time", "cpu_usage", "exit_status"])
 # all the attributes of the response object
 
 ```
