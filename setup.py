@@ -30,7 +30,7 @@ setup(
         'Topic :: Utilities'
     ],
     include_package_data = True,
-    packages             = ['async-tio'],
+    packages             = ['src'],
     zip_safe        = False,
     python_requires = '>=3.7'
 )
