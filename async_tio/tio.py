@@ -6,8 +6,8 @@ from typing import Optional
 from aiohttp import ClientSession
 from asyncio import get_event_loop, AbstractEventLoop
 
-from src.response import TioResponse
-from src.exceptions import ApiError
+from async_tio.response import TioResponse
+from async_tio.exceptions import ApiError
 
 class Tio:
 

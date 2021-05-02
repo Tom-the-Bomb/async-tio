@@ -1,5 +1,5 @@
 
-from src.exceptions import LanguageNotFound
+from async_tio.exceptions import LanguageNotFound
 
 class TioResponse:
 

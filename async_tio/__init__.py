@@ -1,6 +1,6 @@
-from src.response import *
-from src.tio import *
-from src.exceptions import *
+from async_tio.response import *
+from async_tio.tio import *
+from async_tio.exceptions import *
 
 __version__ = "1.0.0"
 __author__  = "Tom the Bomb"
