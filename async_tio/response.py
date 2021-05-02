@@ -14,7 +14,7 @@ class TioResponse:
             raise LanguageNotFound(self.output)
 
         stats = data.split("\n")
-        parse_line = lambda line: line.split(":")[-1].split(" ")[1]
+        parse_line = lambda line: line.split(":")[-1].strip().split(" ")[0]
 
         try:
             self.stdout      = "\n".join(stats[:-6])
