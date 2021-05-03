@@ -3,6 +3,7 @@ import re
 from zlib    import compress
 from functools import partial
 from typing import Optional
+from inspect import isawaitable
 
 from aiohttp import ClientSession
 from asyncio import get_event_loop, AbstractEventLoop
@@ -10,23 +11,39 @@ from asyncio import get_event_loop, AbstractEventLoop
 from .response import TioResponse
 from .exceptions import ApiError, LanguageNotFound
 
-class Tio:
+class AsyncMeta(type):
 
-    def __init__(self, loop: Optional[AbstractEventLoop] = None):
-        self.API_URL = "https://tio.run/cgi-bin/run/api/"
+    async def __call__(self, *args, **kwargs):
+
+        obb = object.__new__(self)
+        fn  = obb.__init__(*args, **kwargs)
+
+        if isawaitable(fn):
+            await fn
+        return obb
+
+class Tio(metaclass=AsyncMeta):
+
+    async def __init__(self, session: Optional[ClientSession] = None, loop: Optional[AbstractEventLoop] = None):
+        self.API_URL       = "https://tio.run/cgi-bin/run/api/"
+        self.LANGUAGES_URL = "https://tio.run/languages.json"
+        self.languages = []
 
         if loop:
-            self._loop = loop
+            self.loop = loop
         else:
-            self._loop = get_event_loop()
+            self.loop = get_event_loop()
+        
+        if session:
+            self.session = session
+        else:
+            self.session = ClientSession()
 
-        self._loop.create_task(self.__ainit__())
-
-    async def __ainit__(self):
-        self.session = ClientSession()
+        await self._update_languages
 
     async def __aenter__(self):
         self.session = ClientSession()
+        await self._update_languages
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
@@ -34,6 +51,13 @@ class Tio:
 
     async def close(self):
         await self.session.close()
+
+    async def _update_languages(self):
+
+        async with self.session.get(self.LANGUAGES_URL) as r:
+            if r.ok:
+                data = await r.json()
+                self.languages = list(data.keys())
 
     def _format_payload(self, pair: tuple):
         name, obj = pair

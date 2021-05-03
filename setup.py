@@ -31,6 +31,7 @@ setup(
     ],
     include_package_data = True,
     packages             = ['async_tio'],
+    install_requires     = ['aiohttp'],
     zip_safe        = True,
     python_requires = '>=3.7'
 )
