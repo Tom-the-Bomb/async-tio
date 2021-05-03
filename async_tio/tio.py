@@ -3,16 +3,28 @@ import re
 from zlib    import compress
 from functools import partial
 from typing import Optional
+from inspect import isawaitable
 
 from aiohttp import ClientSession
-from asyncio import get_event_loop, AbstractEventLoop, run
+from asyncio import get_event_loop, AbstractEventLoop
 
 from .response import TioResponse
 from .exceptions import ApiError, LanguageNotFound
 
-class Tio:
+class AsyncMeta(type):
 
-    def __init__(self, session: Optional[ClientSession] = None, loop: Optional[AbstractEventLoop] = None):
+    async def __call__(self, *args, **kwargs):
+
+        obb = object.__new__(self)
+        fn  = obb.__init__(*args, **kwargs)
+
+        if isawaitable(fn):
+            await fn
+        return obb
+
+class Tio(metaclass=AsyncMeta):
+
+    async def __init__(self, session: Optional[ClientSession] = None, loop: Optional[AbstractEventLoop] = None):
         self.API_URL       = "https://tio.run/cgi-bin/run/api/"
         self.LANGUAGES_URL = "https://tio.run/languages.json"
         self.languages = []
@@ -21,15 +33,13 @@ class Tio:
             self.loop = loop
         else:
             self.loop = get_event_loop()
+        
+        if session:
+            self.session = session
+        else:
+            self.session = ClientSession()
 
-        async def init_session(session):
-            if session:
-                self.session = session
-            else:
-                self.session = ClientSession()
-            await self._update_languages()
-
-        run(init_session(session))
+        await self._update_languages()
 
     async def __aenter__(self):
         self.session = ClientSession()
