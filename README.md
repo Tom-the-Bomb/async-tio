@@ -20,7 +20,7 @@ async def main():
         return await tio.execute("print('hello world')", language="python3")
 
     #Or you can do
-    tio = await async_tio.Tio() #instantiate a Tio object
+    tio = async_tio.Tio() #instantiate a Tio object
     ...
     #do stuff
     ...

@@ -32,9 +32,9 @@ class TioResponse:
 
     def __eq__(self, o):
         if isinstance(o, TioResponse):
-            return self.output == o.output
+            return self.stdout == o.stdout
         else:
-            return self.output == o
+            return self.stdout == o
         
     def __ne__(self, o):
         return not self.__eq__(o)
