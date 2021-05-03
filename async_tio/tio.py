@@ -39,11 +39,11 @@ class Tio(metaclass=AsyncMeta):
         else:
             self.session = ClientSession()
 
-        await self._update_languages
+        await self._update_languages()
 
     async def __aenter__(self):
         self.session = ClientSession()
-        await self._update_languages
+        await self._update_languages()
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
