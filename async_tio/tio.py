@@ -5,7 +5,7 @@ from functools import partial
 from typing import Optional
 
 from aiohttp import ClientSession
-from asyncio import get_event_loop, AbstractEventLoop
+from asyncio import get_event_loop, AbstractEventLoop, run
 
 from .response import TioResponse
 from .exceptions import ApiError, LanguageNotFound
@@ -29,7 +29,7 @@ class Tio:
                 self.session = ClientSession()
             await self._update_languages()
 
-        self.loop.create_task(init_session(session))
+        run(init_session(session))
 
     async def __aenter__(self):
         self.session = ClientSession()
