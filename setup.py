@@ -13,7 +13,7 @@ setup(
     long_description              = open("README.md").read(),
     long_description_content_type = "text/markdown",
     license      = "MIT",
-    url          = "https://github.com/Tom-the-Bomb/Discord-Games",
+    url          = "https://github.com/Tom-the-Bomb/async-tio",
     project_urls = {
         "Repository"   : "https://github.com/Tom-the-Bomb/async-tio",
         "Issue tracker": "https://github.com/Tom-the-Bomb/async-tio/issues",
