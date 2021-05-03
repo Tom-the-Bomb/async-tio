@@ -13,14 +13,14 @@ import async_tio
 
 async def main():
 
-    async with async_tio.Tio() as tio:
+    async with await async_tio.Tio() as tio:
         print(tio.languages) #list of all supported languages
 
         #execute the code
         return await tio.execute("print('hello world')", language="python3")
 
     #Or you can do
-    tio = async_tio.Tio() #instantiate a Tio object
+    tio = await async_tio.Tio() #instantiate a Tio object
     ...
     #do stuff
     ...
