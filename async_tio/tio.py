@@ -105,6 +105,6 @@ class Tio(metaclass=AsyncMeta):
                 if re.search(r"The language ?'.+' ?could not be found on the server.", data):
                     raise LanguageNotFound(data[16:])
                 else:
-                    return TioResponse(data)
+                    return TioResponse(data, language)
             else:
                 raise ApiError(f"Error {r.status} {r.reason}")

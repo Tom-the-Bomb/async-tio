@@ -1,9 +1,10 @@
 
 class TioResponse:
 
-    def __init__(self, data: str):
+    def __init__(self, data: str, language: str):
 
         self.token = data[:16]
+        self.provided_language = language
         
         data = data.replace(data[:16], "")
         self.output = data
