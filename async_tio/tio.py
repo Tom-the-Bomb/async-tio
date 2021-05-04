@@ -79,6 +79,11 @@ class Tio(metaclass=AsyncMeta):
         arguments : Optional[list] = [], 
     ):
 
+        if language not in self.languages:
+            match = [l for l in self.languages if language in l]
+            if match:
+                language = match[0]
+
         data = {
             "lang"       : [language],
             ".code.tio"  : code,
