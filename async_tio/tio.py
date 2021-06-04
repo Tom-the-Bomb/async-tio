@@ -4,7 +4,7 @@ import re
 
 from zlib import compress
 from typing import Optional, Tuple
-from asyncio import get_event_loop, AbstractEventLoop
+from asyncio import get_event_loop, get_running_loop, AbstractEventLoop
 
 from aiohttp import ClientSession
 
@@ -27,7 +27,10 @@ class Tio:
         if loop:
             self.loop = loop
         else:
-            self.loop = get_event_loop()
+            try:
+                self.loop = get_running_loop()
+            except RuntimeError:
+                self.loop = get_event_loop()
         
         if session:
             self.session = session
