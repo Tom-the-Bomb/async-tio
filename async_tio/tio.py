@@ -1,30 +1,25 @@
+from __future__ import annotations
+
 import re
 
-from zlib    import compress
-from functools import partial
-from typing import Optional
-from inspect import isawaitable
+from zlib import compress
+from typing import Optional, Tuple
+from asyncio import get_event_loop, AbstractEventLoop
 
 from aiohttp import ClientSession
-from asyncio import get_event_loop, AbstractEventLoop
 
 from .response import TioResponse
 from .exceptions import ApiError, LanguageNotFound
 
-class AsyncMeta(type):
 
-    async def __call__(self, *args, **kwargs):
+class Tio:
 
-        obb = object.__new__(self)
-        fn  = obb.__init__(*args, **kwargs)
+    def __init__(
+        self, 
+        session: Optional[ClientSession] = None, 
+        loop: Optional[AbstractEventLoop] = None
+    ) -> None:
 
-        if isawaitable(fn):
-            await fn
-        return obb
-
-class Tio(metaclass=AsyncMeta):
-
-    async def __init__(self, session: Optional[ClientSession] = None, loop: Optional[AbstractEventLoop] = None):
         self.API_URL       = "https://tio.run/cgi-bin/run/api/"
         self.LANGUAGES_URL = "https://tio.run/languages.json"
         self.languages = []
@@ -37,38 +32,39 @@ class Tio(metaclass=AsyncMeta):
         if session:
             self.session = session
         else:
-            self.session = ClientSession()
+            self.session = None
 
-        await self._update_languages()
+        self.loop.run_until_complete(self._initialize())
 
-    async def __aenter__(self):
-        self.session = ClientSession()
-        await self._update_languages()
+    async def __aenter__(self) -> Tio:
+        await self._initialize()
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, *_) -> None:
         await self.close()
 
     async def close(self):
         await self.session.close()
 
-    async def _update_languages(self):
-
+    async def _initialize(self) -> None:
+        self.session = ClientSession()
         async with self.session.get(self.LANGUAGES_URL) as r:
             if r.ok:
                 data = await r.json()
                 self.languages = list(data.keys())
+            return None
 
-    def _format_payload(self, pair: tuple):
-        name, obj = pair
-        to_bytes  = partial(bytes, encoding='utf-8')
+    def _format_payload(self, name: str, obj: str) -> bytes:
         if not obj:
             return b''
         elif isinstance(obj, list):
             content = ['V' + name, str(len(obj))] + obj
-            return to_bytes('\x00'.join(content) + '\x00')
+            return bytes('\x00'.join(content) + '\x00', encoding='utf-8')
         else:
-            return to_bytes(f"F{name}\x00{len(to_bytes(obj))}\x00{obj}\x00")
+            return bytes(
+                f"F{name}\x00{len(bytes(obj, encoding='utf-8'))}\x00{obj}\x00", 
+                encoding='utf-8'
+            )
     
     async def execute(
         self, code: str, *, 
@@ -77,7 +73,7 @@ class Tio(metaclass=AsyncMeta):
         compiler_flags: Optional[list] = [], 
         Cl_options: Optional[list] = [], 
         arguments : Optional[list] = [], 
-    ):
+    ) -> Optional[TioResponse]:
 
         if language not in self.languages:
             match = [l for l in self.languages if language in l]
@@ -93,8 +89,11 @@ class Tio(metaclass=AsyncMeta):
             "args"       : arguments,
         }
 
-        bytes_ = b''.join(map(self._format_payload, data.items())) + b'R'
-        data   = compress(bytes_, 9)[2:-4]
+        bytes_ = b''.join(
+            map(self._format_payload, data.keys(), data.values())
+        ) + b'R'
+
+        data = compress(bytes_, 9)[2:-4]
 
         async with self.session.post(self.API_URL, data=data) as r:
 
@@ -107,4 +106,4 @@ class Tio(metaclass=AsyncMeta):
                 else:
                     return TioResponse(data, language)
             else:
-                raise ApiError(f"Error {r.status} {r.reason}")
+                raise ApiError(f"Error {r.status}, {r.reason}")

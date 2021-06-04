@@ -1,7 +1,7 @@
 
 class TioResponse:
 
-    def __init__(self, data: str, language: str):
+    def __init__(self, data: str, language: str) -> None:
 
         self.token = data[:16]
         self.provided_language = language
@@ -22,20 +22,20 @@ class TioResponse:
         except IndexError:
             pass
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<TioResponse status={self.exit_status}>"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.output
 
-    def __int__(self):
+    def __int__(self) -> int:
         return self.exit_status
 
-    def __eq__(self, o):
+    def __eq__(self, o) -> bool:
         if isinstance(o, TioResponse):
             return self.stdout == o.stdout
         else:
             return self.stdout == o
         
-    def __ne__(self, o):
+    def __ne__(self, o) -> bool:
         return not self.__eq__(o)
