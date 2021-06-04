@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import re
+import asyncio
 
 from zlib import compress
 from typing import Optional, Tuple
-from asyncio import get_event_loop, get_running_loop, AbstractEventLoop
 
 from aiohttp import ClientSession
 
@@ -17,7 +17,7 @@ class Tio:
     def __init__(
         self, 
         session: Optional[ClientSession] = None, 
-        loop: Optional[AbstractEventLoop] = None
+        loop: Optional[asyncio.AbstractEventLoop] = None
     ) -> None:
 
         self.API_URL       = "https://tio.run/cgi-bin/run/api/"
@@ -28,16 +28,16 @@ class Tio:
             self.loop = loop
         else:
             try:
-                self.loop = get_running_loop()
+                self.loop = asyncio.get_running_loop()
             except RuntimeError:
-                self.loop = get_event_loop()
+                self.loop = asyncio.get_event_loop()
         
         if session:
             self.session = session
         else:
             self.session = None
 
-        self.loop.run_until_complete(self._initialize())
+        asyncio.run(self._initialize())
 
     async def __aenter__(self) -> Tio:
         await self._initialize()
