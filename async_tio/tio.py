@@ -27,7 +27,7 @@ class Tio:
         if loop:
             self.loop = loop
         else:
-            self.loop = asyncio.get_event_loop()
+            self.loop = asyncio.new_event_loop()
         
         if session:
             self.session = session
