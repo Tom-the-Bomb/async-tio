@@ -37,7 +37,10 @@ class Tio:
         else:
             self.session = None
 
-        self.loop.create_task(self._initialize())
+        if self.loop.running:
+            self.loop.create_task(self._initialize())
+        else:
+            self.loop.run_until_complete(self._initialize())
 
     async def __aenter__(self) -> Tio:
         await self._initialize()
