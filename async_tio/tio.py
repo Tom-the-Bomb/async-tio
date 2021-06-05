@@ -4,7 +4,7 @@ import re
 import asyncio
 
 from zlib import compress
-from typing import Optional, Tuple
+from typing import Optional, Union
 
 from aiohttp import ClientSession
 
@@ -21,6 +21,7 @@ class Tio:
         store_languages: Optional[bool] = True,
     ) -> None:
 
+        self._store_languages = store_languages
         self.API_URL       = "https://tio.run/cgi-bin/run/api/"
         self.LANGUAGES_URL = "https://tio.run/languages.json"
         self.languages = []
@@ -39,9 +40,9 @@ class Tio:
             self.session = None
 
         if self.loop.is_running():
-            self.loop.create_task(self._initialize(store_languages))
+            self.loop.create_task(self._initialize())
         else:
-            self.loop.run_until_complete(self._initialize(store_languages))
+            self.loop.run_until_complete(self._initialize())
         
         return None
 
@@ -52,19 +53,19 @@ class Tio:
     async def __aexit__(self, *_) -> None:
         await self.close()
 
-    async def close(self):
+    async def close(self) -> None:
         await self.session.close()
 
-    async def _initialize(self, store_languages: bool) -> None:
+    async def _initialize(self) -> None:
         self.session = ClientSession()
-        if store_languages:
+        if self._store_languages:
             async with self.session.get(self.LANGUAGES_URL) as r:
                 if r.ok:
                     data = await r.json()
                     self.languages = list(data.keys())
         return None
 
-    def _format_payload(self, name: str, obj: str) -> bytes:
+    def _format_payload(self, name: str, obj: Union[list, str]) -> bytes:
         if not obj:
             return b''
         elif isinstance(obj, list):
