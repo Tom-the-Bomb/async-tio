@@ -17,7 +17,8 @@ class Tio:
     def __init__(
         self, 
         session: Optional[ClientSession] = None, 
-        loop: Optional[asyncio.AbstractEventLoop] = None
+        loop: Optional[asyncio.AbstractEventLoop] = None, *,
+        store_languages: Optional[bool] = True,
     ) -> None:
 
         self.API_URL       = "https://tio.run/cgi-bin/run/api/"
@@ -27,14 +28,22 @@ class Tio:
         if loop:
             self.loop = loop
         else:
-            self.loop = asyncio.new_event_loop()
+            try:
+                self.loop = asyncio.get_running_loop()
+            except RuntimeError:
+                self.loop = asyncio.get_event_loop()
         
         if session:
             self.session = session
         else:
             self.session = None
 
-        self.loop.run_until_complete(self._initialize())
+        if self.loop.is_running():
+            self.loop.create_task(self._initialize(store_languages))
+        else:
+            self.loop.run_until_complete(self._initialize(store_languages))
+        
+        return None
 
     async def __aenter__(self) -> Tio:
         await self._initialize()
@@ -46,13 +55,14 @@ class Tio:
     async def close(self):
         await self.session.close()
 
-    async def _initialize(self) -> None:
+    async def _initialize(self, store_languages: bool) -> None:
         self.session = ClientSession()
-        async with self.session.get(self.LANGUAGES_URL) as r:
-            if r.ok:
-                data = await r.json()
-                self.languages = list(data.keys())
-            return None
+        if store_languages:
+            async with self.session.get(self.LANGUAGES_URL) as r:
+                if r.ok:
+                    data = await r.json()
+                    self.languages = list(data.keys())
+        return None
 
     def _format_payload(self, name: str, obj: str) -> bytes:
         if not obj:
