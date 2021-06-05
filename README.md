@@ -6,33 +6,25 @@ This is a simple unofficial async Api-wrapper for [tio.run](https://tio.run/#)
 $ pip install async_tio
 ```
 
-**Examples**
+**Example**
+
 ```py
-import asyncio
-import async_tio
+# assuming you are already inside an async environment and have already imported everything
+# to instantiate
+# recommended to have a global class if you are going to run .execute more than 1 time throughout the program
+# alternatively you can use the async context manager if it's a one time use:
+# async with async_tio.Tio() as tio: ...
+tio = async_tio.Tio()
 
-async def main():
+# to execute
+output = tio.execute("print('')", language="python3") # pass in other optional kwargs if needed
 
-    async with await async_tio.Tio() as tio:
-        print(tio.languages) #list of all supported languages
+print(str(output)) # the formatted output along with the stats
+print(output.stdout) # the output by itself
+print(int(output)) # returns the exit status
 
-        #execute the code
-        return await tio.execute("print('hello world')", language="python3")
-
-    #Or you can do
-    tio = await async_tio.Tio() #instantiate a Tio object
-    ...
-    #do stuff
-    ...
-    #at the end
-    await tio.close()
-
-output = asyncio.run(main())
-
-print(str(output)) #the formatted output along with the stats
-print(int(output)) #returns the exit status
-
-print(vars(output).keys())
+# print(vars(output).keys())
 # dict_keys(['token', 'output', 'stdout', 'real_time', 'user_time', 'sys_time', 'cpu_usage', 'exit_status'])
-# all the attributes of the response object
+# all the attributes of the response object you can access
 ```
+---
