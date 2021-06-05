@@ -37,7 +37,7 @@ class Tio:
         else:
             self.session = None
 
-        if self.loop.running:
+        if self.loop.is_running():
             self.loop.create_task(self._initialize())
         else:
             self.loop.run_until_complete(self._initialize())
