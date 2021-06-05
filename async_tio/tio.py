@@ -27,20 +27,14 @@ class Tio:
         if loop:
             self.loop = loop
         else:
-            try:
-                self.loop = asyncio.get_running_loop()
-            except RuntimeError:
-                self.loop = asyncio.get_event_loop()
+            self.loop = asyncio.get_event_loop()
         
         if session:
             self.session = session
         else:
             self.session = None
 
-        if self.loop.is_running():
-            self.loop.create_task(self._initialize())
-        else:
-            self.loop.run_until_complete(self._initialize())
+        self.loop.run_until_complete(self._initialize())
 
     async def __aenter__(self) -> Tio:
         await self._initialize()
