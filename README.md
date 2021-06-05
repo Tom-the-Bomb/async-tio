@@ -17,14 +17,14 @@ $ pip install async_tio
 tio = async_tio.Tio()
 
 # to execute
-output = tio.execute("print('')", language="python3") # pass in other optional kwargs if needed
+output = await tio.execute("print('')", language="python3") # pass in other optional kwargs if needed
 
 print(str(output)) # the formatted output along with the stats
 print(output.stdout) # the output by itself
 print(int(output)) # returns the exit status
 
 # print(vars(output).keys())
-# dict_keys(['token', 'output', 'stdout', 'real_time', 'user_time', 'sys_time', 'cpu_usage', 'exit_status'])
+# -> dict_keys(['token', 'output', 'stdout', 'real_time', 'user_time', 'sys_time', 'cpu_usage', 'exit_status'])
 # all the attributes of the response object you can access
 ```
 ---
