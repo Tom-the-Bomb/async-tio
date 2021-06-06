@@ -14,7 +14,7 @@ $ pip install async_tio
 # recommended to have a global class if you are going to run .execute more than 1 time throughout the program
 # alternatively you can use the async context manager if it's a one time use:
 # async with async_tio.Tio() as tio: ...
-tio = async_tio.Tio()
+tio = async_tio.Tio() # Optional 'loop' and 'session' kwargs etc. if needed
 
 # to execute
 output = await tio.execute("print('')", language="python3") # pass in other optional kwargs if needed
