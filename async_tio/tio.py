@@ -15,9 +15,9 @@ from .exceptions import ApiError, LanguageNotFound
 class Tio:
 
     def __init__(
-        self, 
+        self, *, 
         session: Optional[ClientSession] = None, 
-        loop: Optional[asyncio.AbstractEventLoop] = None, *,
+        loop: Optional[asyncio.AbstractEventLoop] = None,
         store_languages: Optional[bool] = True,
     ) -> None:
 
@@ -57,7 +57,8 @@ class Tio:
         await self.session.close()
 
     async def _initialize(self) -> None:
-        self.session = ClientSession()
+        if not self.session:
+            self.session = ClientSession()
         if self._store_languages:
             async with self.session.get(self.LANGUAGES_URL) as r:
                 if r.ok:
