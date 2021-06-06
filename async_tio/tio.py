@@ -45,9 +45,10 @@ class Tio:
         else:
             self.loop.run_until_complete(self._initialize())
 
-        while True:
-            if self.__ready:
-                return None
+        while not self.__ready:
+            continue
+
+        return None
 
     async def __aenter__(self) -> Tio:
         await self._initialize()
