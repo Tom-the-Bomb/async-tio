@@ -21,6 +21,7 @@ class Tio:
         store_languages: Optional[bool] = True,
     ) -> None:
 
+        self.__ready: bool = False
         self._store_languages = store_languages
         self.API_URL       = "https://tio.run/cgi-bin/run/api/"
         self.LANGUAGES_URL = "https://tio.run/languages.json"
@@ -43,8 +44,10 @@ class Tio:
             self.loop.create_task(self._initialize())
         else:
             self.loop.run_until_complete(self._initialize())
-        
-        return None
+
+        while True:
+            if self.__ready:
+                return None
 
     async def __aenter__(self) -> Tio:
         await self._initialize()
@@ -64,7 +67,7 @@ class Tio:
                 if r.ok:
                     data = await r.json()
                     self.languages = list(data.keys())
-        return None
+        self.__ready = True
 
     def _format_payload(self, name: str, obj: Union[list, str]) -> bytes:
         if not obj:
