@@ -22,7 +22,7 @@ class TioResponse:
         except IndexError:
             pass
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return f"<TioResponse status={self.exit_status}>"
 
     def __str__(self) -> str:
