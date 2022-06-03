@@ -71,7 +71,8 @@ class Tio:
             await session.close()
 
     async def find_language(self, inp_lang: str) -> str:
-        """
+        """|coro|
+        
         a helper method that finds the closest language match with an input.
         E.g. TIO wants "python3" for python but a user may want to input "py" instead for example
 
@@ -191,7 +192,7 @@ class Tio:
         """
 
         if find_closest_lang:
-            language = self.find_language(language)
+            language = await self.find_language(language)
 
         data: dict[str, PayloadType] = {
             'lang': [language],
