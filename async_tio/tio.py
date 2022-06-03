@@ -1,121 +1,139 @@
 from __future__ import annotations
 
 import re
-import asyncio
-
-from zlib import compress
-from typing import Optional, Union
+import zlib
+from typing import (
+    TYPE_CHECKING,
+    ClassVar, 
+    Optional, 
+    Union,
+    Type,
+    List,
+)
 
 from aiohttp import ClientSession
 
 from .response import TioResponse
 from .exceptions import ApiError, LanguageNotFound
 
+if TYPE_CHECKING:
+    from types import TracebackType
+    from typing_extensions import Self, TypeAlias
+
+    PayloadType: TypeAlias = Union[str, List[str]]
 
 class Tio:
+    API_URL: ClassVar[str] = 'https://tio.run/cgi-bin/run/api/'
+    LANGUAGES_URL: ClassVar[str] = 'https://tio.run/languages.json'
+    _http_session: ClientSession
 
-    def __init__(
-        self, *, 
-        session: Optional[ClientSession] = None, 
-        loop: Optional[asyncio.AbstractEventLoop] = None,
-        store_languages: Optional[bool] = True,
-    ) -> None:
-
-        self._store_languages = store_languages
-        self.API_URL       = "https://tio.run/cgi-bin/run/api/"
-        self.LANGUAGES_URL = "https://tio.run/languages.json"
-        self.languages = []
-
-        if loop:
-            self.loop = loop
-        else:
-            try:
-                self.loop = asyncio.get_running_loop()
-            except RuntimeError:
-                self.loop = asyncio.get_event_loop()
-        
+    def __init__(self, *, session: Optional[ClientSession] = None) -> None:
         if session:
-            self.session = session
+            self._http_session = session
         else:
-            self.session = None
+            self._http_session = ClientSession()
 
-        if self.loop.is_running():
-            self.loop.create_task(self._initialize())
-        else:
-            self.loop.run_until_complete(self._initialize())
-        
-        return None
-
-    async def __aenter__(self) -> Tio:
-        await self._initialize()
+    async def __aenter__(self) -> Self:
         return self
 
-    async def __aexit__(self, *_) -> None:
-        await self.close()
+    async def __aexit__(
+        self, 
+        exc_type: Optional[Type[BaseException]], 
+        exc_val: Optional[BaseException], 
+        exc_tb: Optional[TracebackType],
+    ) -> None:
+        return await self.close()
 
     async def close(self) -> None:
-        await self.session.close()
+        """closes the internal http session"""
+        if session := self._http_session:
+            await session.close()
 
-    async def _initialize(self) -> None:
-        if not self.session:
-            self.session = ClientSession()
-        if self._store_languages:
-            async with self.session.get(self.LANGUAGES_URL) as r:
+    async def get_languages(self) -> list:
+        if not self._languages:
+            async with self._http_session.get(self.LANGUAGES_URL) as r:
                 if r.ok:
                     data = await r.json()
-                    self.languages = list(data.keys())
-        return None
+                    self._languages_cache = list(data.keys())
+        
+        return self._languages_cache
 
-    def _format_payload(self, name: str, obj: Union[list, str]) -> bytes:
-        if not obj:
+    def _format_payload(self, key: str, value: PayloadType) -> bytes:
+        """encodes the payload into bytes for tio execution"""
+        if not value:
             return b''
-        elif isinstance(obj, list):
-            content = ['V' + name, str(len(obj))] + obj
-            return bytes('\x00'.join(content) + '\x00', encoding='utf-8')
+            
+        if isinstance(value, (tuple, list)):
+            values = '\x00'.join(value)
+            byt = f'V{key}\x00{len(value)}\x00{values}\x00'
         else:
-            return bytes(
-                f"F{name}\x00{len(bytes(obj, encoding='utf-8'))}\x00{obj}\x00", 
-                encoding='utf-8'
-            )
+            byt = f'F{key}\x00{len(value.encode())}\x00{value}\x00'
+        return byt.encode(errors='ignore')
     
     async def execute(
-        self, code: str, *, 
-        language  : str, 
-        inputs    : Optional[str] = "",
-        compiler_flags: Optional[list] = [], 
-        Cl_options: Optional[list] = [], 
-        arguments : Optional[list] = [], 
-    ) -> Optional[TioResponse]:
+        self, 
+        code: str,
+        *,
+        language: str, 
+        inputs: str = '',
+        compiler_flags: Optional[list[str]] = None, 
+        cli_options: Optional[list[str]] = None, 
+        arguments: Optional[list[str]] = None, 
+    ) -> TioResponse:
+        """|coro|
+        
+        makes an execution to `TIO`
 
-        if language not in self.languages:
-            match = [l for l in self.languages if language in l]
-            if match:
-                language = match[0]
+        Parameters
+        ----------
+        code : str
+            the code to execute
+        language : str
+            the language of the executed code (see `Tio.languages`)
+        inputs : str, optional
+            stdin inputs for the program, by default ''
+        compiler_flags : Optional[list[str]], optional
+            compiler flags, by default None
+        cli_options : Optional[list[str]], optional
+            command line options, by default None
+        arguments : Optional[list[str]], optional
+            additional arguments, by default None
 
-        data = {
-            "lang"       : [language],
-            ".code.tio"  : code,
-            ".input.tio" : inputs,
-            "TIO_CFLAGS" : compiler_flags,
-            "TIO_OPTIONS": Cl_options,
-            "args"       : arguments,
+        Returns
+        -------
+        TioResponse
+            the response for the execution
+
+        Raises
+        ------
+        LanguageNotFound
+            The provided language is unavailable
+        ApiError
+            The API returned a non OK status code
+        """
+        data: dict[str, PayloadType] = {
+            'lang': [language],
+            '.code.tio': code,
+            '.input.tio': inputs,
+            'TIO_CFLAGS': compiler_flags or [],
+            'TIO_OPTIONS': cli_options or [],
+            'args': arguments or [],
         }
 
-        bytes_ = b''.join(
-            map(self._format_payload, data.keys(), data.values())
-        ) + b'R'
+        byt: bytes = b''.join([
+            self._format_payload(key, value) for key, value in data.items()
+        ]) + b'R'
 
-        data = compress(bytes_, 9)[2:-4]
+        data = zlib.compress(byt, zlib.Z_BEST_COMPRESSION)[2:-4]
 
-        async with self.session.post(self.API_URL, data=data) as r:
+        async with self._http_session.post(self.API_URL, data=data) as response:
+            if response.ok:
+                resp_data = await response.read()
+                resp_data = resp_data.decode(errors='ignore')
 
-            if r.ok:
-                data = await r.read()
-                data = data.decode("utf-8")
-
-                if re.search(r"The language ?'.+' ?could not be found on the server.", data):
-                    raise LanguageNotFound(data[16:])
+                if re.search(r"The language '.+' could not be found on the server", resp_data):
+                    raise LanguageNotFound(resp_data[16:])
                 else:
-                    return TioResponse(data, language)
+                    return TioResponse(resp_data, language)
             else:
-                raise ApiError(f"Error {r.status}, {r.reason}")
+                raise ApiError(response)
