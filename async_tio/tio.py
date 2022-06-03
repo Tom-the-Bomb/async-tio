@@ -191,7 +191,7 @@ class Tio:
         """
 
         if find_closest_lang:
-            language = Tio.find_language(language)
+            language = self.find_language(language)
 
         data: dict[str, PayloadType] = {
             'lang': [language],
