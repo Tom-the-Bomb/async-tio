@@ -1,8 +1,24 @@
+from __future__ import annotations
 
-from typing import Any, Tuple
+from typing import TYPE_CHECKING, Any, Tuple, TypedDict, Union
+from dataclasses import dataclass
+
+if TYPE_CHECKING:
+
+    class LanguageData(TypedDict):
+        name: str
+        categories: list[str]
+        encoding: str
+        link: str
+        prettyify: str
+        tests: dict[str, dict[str, dict[str, str]]]
+        unmask: list[str]
+        updates: str
+
 
 __all__: Tuple[str, ...] = (
     'TioResponse',
+    'Language',
 )
 
 class TioResponse:
@@ -76,3 +92,39 @@ class TioResponse:
 
     def _parse_line(self, line: str) -> str:
         return line.split(':')[-1].strip().split()[0]
+
+
+class Language:
+    """A model class representing a language available in TIO
+
+    Attributes
+    ----------
+    tio_name : str
+        the name of the language TIO expects us to provide for execution
+    name : str
+        the actual, raw name of the language
+    categories : list[str]
+        some tags for the programming language
+    encoding : str
+        the encoding format of the language, e.g. utf-8
+    link : str
+        the link to the home page of the language
+    alias : str
+        a shortened alias for the name of the language
+    """
+    __slots__ = (
+        'tio_name',
+        'name',
+        'categories',
+        'encoding',
+        'link',
+        'alias',
+    )
+
+    def __init__(self, name: str, data: Union[LanguageData, dict[str, Any]]) -> None:
+        self.tio_name: str = name
+        self.name = data.get('name')
+        self.categories = data.get('categories', [])
+        self.encoding = data.get('encoding')
+        self.link = data.get('link')
+        self.alias = data.get('prettyify')
