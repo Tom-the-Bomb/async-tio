@@ -9,6 +9,7 @@ from typing import (
     Union,
     Type,
     List,
+    Any,
 )
 
 from aiohttp import ClientSession
@@ -28,6 +29,8 @@ class Tio:
     _http_session: ClientSession
 
     def __init__(self, *, session: Optional[ClientSession] = None) -> None:
+        self._languages: list[str] = []
+
         if session:
             self._http_session = session
         else:
@@ -51,12 +54,12 @@ class Tio:
 
     async def get_languages(self) -> list:
         if not self._languages:
-            async with self._http_session.get(self.LANGUAGES_URL) as r:
-                if r.ok:
-                    data = await r.json()
-                    self._languages_cache = list(data.keys())
+            async with self._http_session.get(self.LANGUAGES_URL) as response:
+                if response.ok:
+                    data: dict[str, Any] = await response.json()
+                    self._languages = list(data.keys())
         
-        return self._languages_cache
+        return self._languages
 
     def _format_payload(self, key: str, value: PayloadType) -> bytes:
         """encodes the payload into bytes for tio execution"""
