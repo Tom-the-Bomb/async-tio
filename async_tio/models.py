@@ -101,6 +101,7 @@ class TioResponse:
         return not self.__eq__(other)
 
     def _parse_line(self, name: str) -> Union[float, int, str]:
+        """Parses the output string for the respective data attributes"""
         name = re.escape(name)
         if match := re.search(fr'\s{name}:\s?((\d+\.?\d*|\.\d+)|(\d+))', self.output, flags=re.IGNORECASE):
             content = match.group(1)
