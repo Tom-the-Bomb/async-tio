@@ -3,9 +3,12 @@ This is a simple unofficial async Api-wrapper for [tio.run](https://tio.run/#)
 
 **Installation**
 ```bash
-$ pip install async_tio
+$ py -m pip install async_tio
 ```
-
+**Install Latest**
+```bash
+$ py -m pip install git+https://github.com/Tom-the-Bomb/async-tio.git
+```
 **Example**
 
 ```py
@@ -27,4 +30,3 @@ print(int(output)) # returns the exit status
 # -> dict_keys(['token', 'output', 'stdout', 'real_time', 'user_time', 'sys_time', 'cpu_usage', 'exit_status'])
 # all the attributes of the response object you can access
 ```
----

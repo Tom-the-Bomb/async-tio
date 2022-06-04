@@ -1,7 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Tuple, TypedDict, Union
-from dataclasses import dataclass
+from typing import (
+    TYPE_CHECKING,
+    Tuple, 
+    TypedDict, 
+    Union,
+    Any
+)
+import re
 
 if TYPE_CHECKING:
 
@@ -15,11 +21,11 @@ if TYPE_CHECKING:
         unmask: list[str]
         updates: str
 
-
 __all__: Tuple[str, ...] = (
     'TioResponse',
     'Language',
 )
+
 
 class TioResponse:
     """A model representing the response returned from TIO
@@ -45,6 +51,7 @@ class TioResponse:
     exit_status : int
         the exit status for the program
     """
+
     def __init__(self, data: str, language: str) -> None:
 
         self.stdout: str = ''
@@ -58,15 +65,18 @@ class TioResponse:
         self.output: str = data.replace(self.token, '')
         self.provided_language: str = language
 
-        stats = self.output.split('\n')
-
         try:
-            self.stdout = '\n'.join(stats[:-5])
-            self.real_time = float(self._parse_line(stats[-5]))
-            self.user_time = float(self._parse_line(stats[-4]))
-            self.sys_time = float(self._parse_line(stats[-3]))
-            self.cpu_usage = float(self._parse_line(stats[-2]))
-            self.exit_status = int(self._parse_line(stats[-1]))
+            try:
+                split_idx = self.output.rindex('Real time:')
+            except ValueError:
+                split_idx = self.output.rindex('Real Time:')
+            self.stdout = self.output[:split_idx]
+
+            self.real_time = self._parse_line('Real Time')
+            self.user_time = self._parse_line('User Time')
+            self.sys_time = self._parse_line('Sys. Time')
+            self.cpu_usage = self._parse_line('CPU share')
+            self.exit_status = self._parse_line('Exit code')
         except IndexError:
             pass
 
@@ -90,8 +100,19 @@ class TioResponse:
     def __ne__(self, other: Any) -> bool:
         return not self.__eq__(other)
 
-    def _parse_line(self, line: str) -> str:
-        return line.split(':')[-1].strip().split()[0]
+    def _parse_line(self, name: str) -> Union[float, int, str]:
+        name = re.escape(name)
+        if match := re.search(fr'\s{name}:\s?((\d+\.?\d*|\.\d+)|(\d+))', self.output, flags=re.IGNORECASE):
+            content = match.group(1)
+            try:
+                content = float(content)
+                if content.is_integer():
+                    content = int(content)
+                return content
+            except ValueError:
+                return content
+        else:
+            return ''
 
 
 class Language:
