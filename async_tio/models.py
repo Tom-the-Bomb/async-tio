@@ -130,7 +130,7 @@ class Language:
         self.alias = data.get('prettyify')
 
     def __repr__(self) -> str:
-        return f'<Language name="{self.tio_name}" alias="{self.alias}">'
+        return f'<Language name={self.tio_name!r} alias={self.alias!r}>'
 
     def __str__(self) -> str:
         return self.tio_name
