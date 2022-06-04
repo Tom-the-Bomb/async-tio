@@ -140,3 +140,6 @@ class Language:
             return self.tio_name == other.tio_name
         else:
             return other in {self.tio_name, self.name, self.alias}
+
+    def __ne__(self, other: Any) -> bool:
+        return not self.__eq__(other)
