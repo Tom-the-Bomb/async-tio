@@ -128,3 +128,15 @@ class Language:
         self.encoding = data.get('encoding')
         self.link = data.get('link')
         self.alias = data.get('prettyify')
+
+    def __repr__(self) -> str:
+        return f'<Language name="{self.tio_name}" alias="{self.alias}">'
+
+    def __str__(self) -> str:
+        return self.tio_name
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, Language):
+            return self.tio_name == other.tio_name
+        else:
+            return other in {self.tio_name, self.name, self.alias}
