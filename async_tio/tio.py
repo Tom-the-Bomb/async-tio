@@ -175,7 +175,7 @@ class Tio:
             command line options, by default None
         arguments : Optional[list[str]], optional
             additional arguments, by default None
-        find_cloest_lang : bool
+        find_closest_lang : bool
             specifies whether or not to lazily search for a closest language match that is valid to TIO, by default True
 
         Returns
