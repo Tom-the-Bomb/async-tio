@@ -81,7 +81,7 @@ class TioResponse:
             pass
 
     def __repr__(self):
-        return f"<TioResponse status={self.exit_status}>"
+        return f"<{self.__class__.__name__} status={self.exit_status}>"
 
     def __str__(self) -> str:
         """returns the full formated output of the execution"""
@@ -143,16 +143,16 @@ class Language:
         'alias',
     )
 
-    def __init__(self, name: str, data: Union[LanguageData, dict[str, Any]]) -> None:
+    def __init__(self, name: str, data: LanguageData) -> None:
         self.tio_name: str = name
-        self.name = data.get('name')
-        self.categories = data.get('categories', [])
-        self.encoding = data.get('encoding')
-        self.link = data.get('link')
-        self.alias = data.get('prettyify')
+        self.name: str = data.get('name')
+        self.categories: list[str] = data.get('categories', [])
+        self.encoding: str = data.get('encoding')
+        self.link: str = data.get('link')
+        self.alias: str = data.get('prettyify')
 
     def __repr__(self) -> str:
-        return f'<Language name={self.tio_name!r} alias={self.alias!r}>'
+        return f'<{self.__class__.__name__} name={self.tio_name!r} alias={self.alias!r}>'
 
     def __str__(self) -> str:
         return self.tio_name
