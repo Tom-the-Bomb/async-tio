@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import difflib
 import re
 import zlib
-import difflib
+
 from typing import (
     TYPE_CHECKING,
     ClassVar, 
@@ -30,9 +31,9 @@ class Tio:
 
     Attributes
     ----------
-    API_URL : str
+    API_URL: str
         a constant classvar representing the URL to the TIO API API
-    LANGUAGES_URL : str
+    LANGUAGES_URL: str
         a constant classvar representing the URL to the TIO languages endpoint
 
     Methods
@@ -42,6 +43,7 @@ class Tio:
     execute
         makes an execution to TIO
     """
+    
     API_URL: ClassVar[str] = 'https://tio.run/cgi-bin/run/api/'
     LANGUAGES_URL: ClassVar[str] = 'https://tio.run/languages.json'
     _http_session: ClientSession
@@ -81,7 +83,7 @@ class Tio:
 
         Parameters
         ----------
-        inp_lang : str
+        inp_lang: str
             the input language "query"
 
         Returns
