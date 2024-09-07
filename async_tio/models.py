@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import (
     TYPE_CHECKING,
-    Tuple, 
-    TypedDict, 
+    Tuple,
+    TypedDict,
     Union,
     Any
 )
@@ -96,7 +96,7 @@ class TioResponse:
             return self.stdout == other.stdout
         else:
             return self.stdout == other
-        
+
     def __ne__(self, other: Any) -> bool:
         return not self.__eq__(other)
 

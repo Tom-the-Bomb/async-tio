@@ -16,9 +16,9 @@ with open('async_tio/__init__.py') as f:
     version = re.search(r"^__version__\s*=\s*[\'']([^\'']*)[\'']", f.read(), re.MULTILINE).group(1)
 
 setup(
-    name='async_tio', 
-    author='Tom-the-Bomb', 
-    version=version, 
+    name='async_tio',
+    author='Tom-the-Bomb',
+    version=version,
     description='An unoffical API wrapper for tio.run',
     long_description=readme,
     long_description_content_type='text/markdown',

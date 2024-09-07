@@ -15,13 +15,13 @@ class LanguageNotFound(Exception):
     pass
 
 class ApiError(Exception):
-    
+
     def __init__(self, response: ClientResponse) -> None:
         self.response = response
 
         self.status: int = response.status
         self.reason: str = response.reason
-        
+
     @property
     def message(self) -> str:
         return f'The Api Raised an Error: {self.status}, {self.reason}'

@@ -5,8 +5,8 @@ import zlib
 import difflib
 from typing import (
     TYPE_CHECKING,
-    ClassVar, 
-    Optional, 
+    ClassVar,
+    Optional,
     Union,
     Type,
     List,
@@ -58,9 +58,9 @@ class Tio:
         return self
 
     async def __aexit__(
-        self, 
-        exc_type: Optional[Type[BaseException]], 
-        exc_val: Optional[BaseException], 
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
         exc_tb: Optional[TracebackType],
     ) -> None:
         return await self.close()
@@ -72,7 +72,7 @@ class Tio:
 
     async def find_language(self, inp_lang: str) -> str:
         """|coro|
-        
+
         a helper method that finds the closest language match with an input.
         E.g. TIO wants "python3" for python but a user may want to input "py" instead for example
 
@@ -94,7 +94,7 @@ class Tio:
 
         if inp_lang in languages:
             return inp_lang
-        
+
         try:
             return languages[lang_aliases.index(inp_lang)].tio_name
         except ValueError:
@@ -138,27 +138,27 @@ class Tio:
         """encodes the payload into bytes for tio execution"""
         if not value:
             return b''
-            
+
         if isinstance(value, (tuple, list)):
             values = '\x00'.join(value)
             byt = f'V{key}\x00{len(value)}\x00{values}\x00'
         else:
             byt = f'F{key}\x00{len(value.encode())}\x00{value}\x00'
         return byt.encode(errors='ignore')
-    
+
     async def execute(
-        self, 
+        self,
         code: str,
         *,
-        language: str, 
+        language: str,
         inputs: str = '',
-        compiler_flags: Optional[list[str]] = None, 
-        cli_options: Optional[list[str]] = None, 
+        compiler_flags: Optional[list[str]] = None,
+        cli_options: Optional[list[str]] = None,
         arguments: Optional[list[str]] = None,
         find_closest_lang: bool = True,
     ) -> TioResponse:
         """|coro|
-        
+
         makes an execution to TIO
 
         Parameters
